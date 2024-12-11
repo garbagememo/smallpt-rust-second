@@ -12,6 +12,7 @@ pub struct Vec3 {
 
 pub type Color = Vec3;
 
+#[allow(dead_code)]
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
         Vec3 { x, y, z }
@@ -83,8 +84,10 @@ fn to_int(x: f64) -> u8 {
     (clamp(x).powf(1.0 / 2.2) * 255.0 + 0.5) as u8
 }
 
+#[allow(dead_code)]
 fn save_ppm_file(filename: &str, image: Vec<Color>, width: usize, height: usize) {
     let mut f = fs::File::create(filename).unwrap();
+    
     writeln!(f, "P3\n{} {}\n{}", width, height, 255).unwrap();
     for i in 0..(width * (height)) {
         write!(
