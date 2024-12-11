@@ -2,7 +2,6 @@ mod raymod;
 use raymod::*;
 
 use rayon::prelude::*;
-use std::f64::consts::*;
 
 use std::io::Write;
 
@@ -95,17 +94,30 @@ fn radiance(r: &Ray, depth: u8,	scene: &Scene) -> Vec3 {
 
 fn main() {
 
+    let args = parameters();
+    println!("{:?}", args);
+    
 	let mut scene=Scene::init();
-	scene.model_init9();			
+    match args.m{
+        0=> scene.model_init0(),
+        1=> scene.model_init1(),
+        2=> scene.model_init2(),
+        3=> scene.model_init3(),
+        4=> scene.model_init4(),
+        5=> scene.model_init5(),
+        6=> scene.model_init6(),
+        7=> scene.model_init7(),
+        8=> scene.model_init8(),
+        9=> scene.model_init9(),
+        _=> scene.model_init0(),
+    };
 
 	
-    let w: usize = 640;
-    let h: usize = 480;
-    let samps = if std::env::args().len() == 2 {
-        std::env::args().skip(1).next().unwrap().parse().unwrap()
-    } else {
-        1
-    };
+    let w: usize = args.w;
+    let h: usize = (480.0*w as f64/640.0) as usize;
+    let samps = args.s;
+    println!("samps={}",samps);
+
     let cam = Ray::new(
         Vec3::new(50.0, 52.0, 295.6),
         Vec3::new(0.0, -0.042612, -1.0).norm(),
@@ -160,5 +172,5 @@ fn main() {
     });
 
     //    save_ppm_file("image.ppm", image, w, h);
-    save_png_file("image.png", image, w, h);
+    save_png_file(&args.output, image, w, h);
 }
