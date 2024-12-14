@@ -67,12 +67,6 @@ impl Sphere {
     }
 }
 
-pub struct InterStruct{
-    pub b:bool,
-    pub t:f64,
-    pub id:usize,
-}
-
 // #[derive(Default)]
 pub struct Scene {
 	pub objects: Vec<Sphere>,
@@ -88,22 +82,20 @@ impl Scene {
 			objects: vec![],
         }
 	}
-
-    pub fn intersect(&self, r: &Ray) -> InterStruct {
-        let mut ir=InterStruct{b:false,t:INF,id:0};
-        for i in 0..self.objects.len() {
+    pub fn intersect(&self, r: &Ray, t: &mut f64, id: &mut usize) -> bool {
+        *t=INF;
+        for i in (0..self.objects.len() ).rev() {
             match self.objects[i].intersect(r) {
                 Some(d)=>{
-                    if d < ir.t {
-                        ir.t=d;
-                        ir.id=i;
+                    if d < *t {
+                        *t=d;
+                        *id=i;
                     }
                 },
                 None=>{},
             }
         }
-        ir.b=ir.t < INF;
-        return ir;
+        return *t < INF;
     }
 
 	pub fn model_init0(&mut self)->bool{
