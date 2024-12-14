@@ -6,13 +6,12 @@ use rayon::prelude::*;
 use std::io::Write;
 
 fn radiance(r: &Ray, depth: u8,	scene: &Scene) -> Vec3 {
-    let mut t: f64 = 0.0;
-    let mut id = 0;
-    if !scene.intersect(r, &mut t, &mut id) {
+    let ir=scene.intersect(r);
+    if ir.b==false {
         return Vec3::zero();
     }
-    let obj = &scene.objects[id];
-    let x = r.o + r.d * t;
+    let obj = &scene.objects[ir.id];
+    let x = r.o + r.d * ir.t;
     let n = (x - obj.p).norm();
     let nl = if n.dot(&r.d) < 0.0 { n } else { n * -1.0 };
     let mut f = obj.c;
