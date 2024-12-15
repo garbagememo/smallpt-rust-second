@@ -6,6 +6,5 @@ edition = "2021"
 [dependencies]
 getopts = "0.2.21"
 image = "0.25.5"
-num-complex = "0.4.6"
 rand = "*"
 rayon = "*"
