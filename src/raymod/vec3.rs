@@ -85,7 +85,7 @@ fn to_int(x: f64) -> u8 {
 }
 
 #[allow(dead_code)]
-fn save_ppm_file(filename: &str, image: Vec<Color>, width: usize, height: usize) {
+pub fn save_ppm_file(filename: &str, image: Vec<Color>, width: usize, height: usize) {
     let mut f = fs::File::create(filename).unwrap();
     
     writeln!(f, "P3\n{} {}\n{}", width, height, 255).unwrap();
@@ -101,18 +101,3 @@ fn save_ppm_file(filename: &str, image: Vec<Color>, width: usize, height: usize)
     }
 }
 
-pub fn save_png_file(filename: &str, out_image: Vec<Color>, width: usize, height: usize) {
-    let mut imgbuf = image::ImageBuffer::new(width as u32, height as u32);
-
-    // Iterate over the coordinates and pixels of the image
-    for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-        let i: usize = (x as usize) + (y as usize) * width;
-        let r = to_int(out_image[i].x);
-        let g = to_int(out_image[i].y);
-        let b = to_int(out_image[i].z);
-        *pixel = image::Rgb([r, g, b]);
-    }
-
-    // Save the image as “fractal.png”, the format is deduced from the path
-    imgbuf.save(filename).unwrap();
-}

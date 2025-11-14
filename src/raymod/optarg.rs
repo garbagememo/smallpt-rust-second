@@ -42,7 +42,7 @@ pub fn parameters() -> Args {
 //    if matches.free.is_empty() {print_usage(&args[0], &opts); }
 
     // キーワード引数の取得
-    let sampstr  = matches.opt_str("s").unwrap_or("1".to_string());
+    let sampstr  = matches.opt_str("s").unwrap_or("32".to_string());
     let s:usize =sampstr.parse().unwrap();
     let w  = matches.opt_str("w").unwrap_or("640".to_string()).parse().unwrap();
     let m  = matches.opt_str("m").unwrap_or("0".to_string()).parse().unwrap();
