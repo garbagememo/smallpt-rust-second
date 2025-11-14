@@ -170,6 +170,5 @@ fn main() {
         }
     });
 
-    //    save_ppm_file("image.ppm", image, w, h);
-    save_png_file(&args.output, image, w, h);
+    save_ppm_file("image.ppm", image, w, h);
 }
