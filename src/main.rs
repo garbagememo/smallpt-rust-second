@@ -24,8 +24,8 @@ fn radiance(r: &Ray, depth: u8,	scene: &Scene) -> Vec3 {
             return obj.m.emitted();
         }
     }
-    let trace_info = obj.m.trace_ray(&r,n,nl,x);
-    obj.m.emitted()+f.mult(&radiance(&trace_info.r,depth,scene))*trace_info.cpc
+    let m_info = obj.m.trace_ray(&r,n,nl,x);
+    obj.m.emitted() + f.mult(&radiance(&m_info.r, depth,scene))*m_info.cpc
 }
 
 fn main() {
@@ -33,14 +33,19 @@ fn main() {
     let args = parameters();
     println!("{:?}", args);
     
-	let mut scene=Scene::init();
-    scene.model_init0();
 
 	
     let w: usize = args.w;
     let h: usize = (480.0*w as f64/640.0) as usize;
     let samps = args.s;
     println!("samps={}",samps);
+	let mut scene=Scene::init();
+    match args.m{
+        0=> scene.model_init0(),
+        2=> scene.model_init2(),
+        _=> scene.model_init0(),
+    };
+
 
     let cam = Ray::new(
         Vec3::new(50.0, 52.0, 295.6),
@@ -82,9 +87,11 @@ fn main() {
                         };
                         let d = cx
                             * ((((sx as f64) + 0.5 + dx) / 2.0 + (x as f64)) / (w as f64) - 0.5)
-                            + cy * ((((sy as f64) + 0.5 + dy) / 2.0 + (y2 as f64)) / (h as f64) - 0.5)
+                            + cy * ((((sy as f64) + 0.5 + dy) / 2.0 + (y2 as f64)) / (h as f64)
+                                - 0.5)
                             + cam.d;
-                        r = r + radiance(&(Ray::new(cam.o + d * 140.0, d.norm())), 0,&scene) / (samps as f64);
+                        r = r + radiance(&(Ray::new(cam.o + d * 140.0, d.norm())), 0,&scene)
+                            * (1.0 / (samps as f64));
                     }
                     band[x as usize] = band[x as usize] + r * (1.0 / 4.0 as f64);
                     r = Vec3::zero();
@@ -93,5 +100,5 @@ fn main() {
         }
     });
 
-    save_ppm_file("image.ppm", image, w, h);
+    save_ppm_file(&args.output, image, w, h);
 }
