@@ -1,6 +1,7 @@
+
 use std::fs;
 use std::io::Write;
-use std::ops::{Add, Mul, Div,Rem, Sub};
+use std::ops::{Add, Mul, Rem, Sub};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vec3 {
@@ -10,6 +11,7 @@ pub struct Vec3 {
 }
 
 pub type Color = Vec3;
+pub const BLACK:Vec3 = Vec3{x:0.0,y:0.0,z:0.0};
 
 #[allow(dead_code)]
 impl Vec3 {
@@ -55,13 +57,6 @@ impl Mul<f64> for Vec3 {
     type Output = Vec3;
     fn mul(self, rhs: f64) -> Self {
         Vec3::new(self.x * rhs, self.y * rhs, self.z * rhs)
-    }
-}
-
-impl Div<f64> for Vec3 {
-    type Output = Vec3;
-    fn div(self, rhs: f64) -> Self {
-        Vec3::new(self.x / rhs, self.y / rhs, self.z / rhs)
     }
 }
 

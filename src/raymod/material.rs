@@ -12,24 +12,26 @@ impl TraceInfo{
 
 pub trait Material: Sync + Send {
     fn value(&self) -> Color;
-    fn emitted(&self) -> Color {
-        Color::zero()
-    }
+    fn emitted(&self) -> Color;
     fn trace_ray(&self,r:&Ray,n:Vec3,nl:Vec3,o:Vec3)->TraceInfo;
 }
 
 pub struct Diffuse {
-    color: Vec3,
+    pub color: Vec3,
+    pub emit:Vec3,
 }
 impl Diffuse {
-    pub const fn new(color: Vec3) -> Self {
-        Self { color }
+    pub const fn new(emit:Vec3,color: Vec3) -> Self {
+        Self { emit,color }
     }
 }
 
 impl Material for Diffuse {
     fn value(&self) -> Color {
         self.color
+    }
+    fn emitted(&self)->Color{
+        self.emit
     }
     fn trace_ray(&self,r:&Ray,n:Vec3,nl:Vec3,o:Vec3)->TraceInfo{
         let r1 = 2.0 * std::f64::consts::PI * random();
@@ -49,38 +51,23 @@ impl Material for Diffuse {
 }
 
 
-pub struct DiffuseLight {
-    pub emit:Vec3,
-}
-impl DiffuseLight {
-    pub fn new(emit:Vec3) -> Self {
-        Self { emit }
-    }
-}
-impl Material for DiffuseLight {
-    fn value(&self) -> Color{
-        Vec3::zero()
-    }
-    fn emitted(&self) -> Color {
-        self.emit
-    }
-    fn trace_ray(&self,r:&Ray,n:Vec3,nl:Vec3,o:Vec3)->TraceInfo{
-        TraceInfo::new(Ray::new(r.d,o),1.0)
-    }
-}
 
 pub struct Mirror {
     pub color: Vec3,
+    pub emit:Vec3,
 }
 
 impl Mirror {
-    pub fn new(color:Vec3) -> Self {
-        Self { color }
+    pub fn new(emit:Vec3,color:Vec3) -> Self {
+        Self { emit,color }
     }
 }
 impl Material for Mirror {
     fn value(&self) -> Color {
         self.color
+    }
+    fn emitted(&self)->Color{
+        self.emit
     }
     fn trace_ray(&self,r:&Ray,n:Vec3,nl:Vec3,o:Vec3)->TraceInfo{
        TraceInfo::new(Ray::new(o, r.d - n * 2.0 * n.dot(&r.d)),1.0)
@@ -89,17 +76,21 @@ impl Material for Mirror {
 
 pub struct Refract {
     pub color:Vec3,
+    pub emit:Vec3,
 }
 
 impl Refract {
-    pub const fn new(color:Vec3) -> Self {
-        Self { color }
+    pub const fn new(emit:Vec3,color:Vec3) -> Self {
+        Self { emit,color }
     }
 }
 
 impl Material for Refract {
     fn value(&self) -> Color {
         self.color
+    }
+    fn emitted(&self)->Color{
+        self.emit
     }
     fn trace_ray(&self,r:&Ray,n:Vec3,nl:Vec3,o:Vec3)->TraceInfo{
         // Refl.Refr
@@ -134,5 +125,4 @@ impl Material for Refract {
     }
 }
 
-        
 
