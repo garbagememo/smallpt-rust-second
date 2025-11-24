@@ -14,81 +14,18 @@ fn radiance(r: &Ray, depth: u8,	scene: &Scene) -> Vec3 {
     let x = r.o + r.d * ir.t;
     let n = (x - obj.p).norm();
     let nl = if n.dot(&r.d) < 0.0 { n } else { n * -1.0 };
-    let mut f = obj.c;
-    let p = if f.x > f.y && f.x > f.z {
-        f.x
-    } else if f.y > f.z {
-        f.y
-    } else {
-        f.z
-    };
+    let mut f = obj.m.value();
+    let p = f64::max(f.x,f64::max(f.y, f.z));
     let depth = depth + 1;
     if depth > 5 {
         if depth < 127 && random() < p {
             f = f * (1.0 / p);
         } else {
-            return obj.e;
+            return obj.m.emitted();
         }
     }
-
-    return match obj.refl {
-        Refl::Diff => {
-            let r1 = 2.0 * std::f64::consts::PI * random();
-            let r2 = random();
-            let r2s = r2.sqrt();
-            let w = nl;
-            let u = ((if w.x.abs() > 0.1 {
-                Vec3::new(0.0, 1.0, 0.0)
-            } else {
-                Vec3::new(1.0, 0.0, 0.0)
-            }) % w)
-                .norm();
-            let v = w % u;
-            let d =
-                (u * f64::cos(r1) * r2s + v * f64::sin(r1) * r2s + w * (1.0 - r2).sqrt()).norm();
-            obj.e + f.mult(&radiance(&Ray::new(x, d), depth,scene))
-        }
-        Refl::Spec => obj.e + f.mult(&radiance(&Ray::new(x, r.d - n * 2.0 * n.dot(&r.d)), depth,scene)),
-        _ => {
-            // Refl.Refr
-            let refl_ray = Ray::new(x, r.d - n * 2.0 * n.dot(&r.d));
-            let into = n.dot(&nl) > 0.0;
-            let nc = 1.0;
-            let nt = 1.5;
-            let nnt = if into { nc / nt } else { nt / nc };
-            let ddn = r.d.dot(&nl);
-            let cos2t = 1.0 - nnt * nnt * (1.0 - ddn * ddn);
-            if cos2t < 0.0 {
-                obj.e + f.mult(&radiance(&refl_ray, depth,scene))
-            } else {
-                let tdir =
-                    r.d * nnt - n * ((if into { 1.0 } else { -1.0 }) * (ddn * nnt + cos2t.sqrt()));
-                tdir.norm();
-                let a = nt - nc;
-                let b = nt + nc;
-                let r0 = a * a / (b * b);
-                let c = 1.0 - (if into { -ddn } else { tdir.dot(&n) });
-                let re = r0 + (1.0 - r0) * c * c * c * c * c;
-                let tr = 1.0 - re;
-                let p = 0.25 + 0.5 * re;
-                let rp = re / p;
-                let tp = tr / (1.0 - p);
-                obj.e
-                    + f.mult(
-                        &(if depth > 2 {
-                            if random() < p {
-                                radiance(&refl_ray, depth,scene) * rp
-                            } else {
-                                radiance(&Ray::new(x, tdir), depth,scene) * tp
-                            }
-                        } else {
-                            radiance(&refl_ray, depth,scene) * re
-                                + radiance(&Ray::new(x, tdir), depth,scene) * tr
-                        }),
-                    )
-            }
-        }
-    };
+    let trace_info = obj.m.trace_ray(&r,n,nl,x);
+    obj.m.emitted()+f.mult(&radiance(&trace_info.r,depth,scene))*trace_info.revise
 }
 
 fn main() {
@@ -97,19 +34,7 @@ fn main() {
     println!("{:?}", args);
     
 	let mut scene=Scene::init();
-    match args.m{
-        0=> scene.model_init0(),
-        1=> scene.model_init1(),
-        2=> scene.model_init2(),
-        3=> scene.model_init3(),
-        4=> scene.model_init4(),
-        5=> scene.model_init5(),
-        6=> scene.model_init6(),
-        7=> scene.model_init7(),
-        8=> scene.model_init8(),
-        9=> scene.model_init9(),
-        _=> scene.model_init0(),
-    };
+    scene.model_init0();
 
 	
     let w: usize = args.w;
@@ -157,11 +82,9 @@ fn main() {
                         };
                         let d = cx
                             * ((((sx as f64) + 0.5 + dx) / 2.0 + (x as f64)) / (w as f64) - 0.5)
-                            + cy * ((((sy as f64) + 0.5 + dy) / 2.0 + (y2 as f64)) / (h as f64)
-                                - 0.5)
+                            + cy * ((((sy as f64) + 0.5 + dy) / 2.0 + (y2 as f64)) / (h as f64) - 0.5)
                             + cam.d;
-                        r = r + radiance(&(Ray::new(cam.o + d * 140.0, d.norm())), 0,&scene)
-                            * (1.0 / (samps as f64));
+                        r = r + radiance(&(Ray::new(cam.o + d * 140.0, d.norm())), 0,&scene) / (samps as f64);
                     }
                     band[x as usize] = band[x as usize] + r * (1.0 / 4.0 as f64);
                     r = Vec3::zero();
