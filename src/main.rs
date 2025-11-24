@@ -25,7 +25,7 @@ fn radiance(r: &Ray, depth: u8,	scene: &Scene) -> Vec3 {
         }
     }
     let trace_info = obj.m.trace_ray(&r,n,nl,x);
-    obj.m.emitted()+f.mult(&radiance(&trace_info.r,depth,scene))*trace_info.revise
+    obj.m.emitted()+f.mult(&radiance(&trace_info.r,depth,scene))*trace_info.cpc
 }
 
 fn main() {
