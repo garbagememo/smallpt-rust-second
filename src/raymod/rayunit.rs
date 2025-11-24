@@ -27,19 +27,13 @@ pub enum Refl {
 pub struct Sphere {
     pub rad: f64,
     pub p: Vec3,
-    pub e: Vec3,
-    pub c: Vec3,
-    pub refl: Refl,
+    pub m: Box<dyn Material>,
 }
 
 
 impl Sphere {
-    pub fn new(rad:f64,p:Vec3,e:Vec3,c:Vec3,refl:Refl)->Sphere{
-	Sphere {
-	    rad,
-	    p,e,c,
-	    refl,
-	}
+    pub fn new(rad:f64,p:Vec3,m:Box<dyn Material>,)->Sphere{
+	    Sphere {rad, p, m, }
     }
 		
     pub fn intersect(&self, ray: &Ray) -> Option<f64> {
@@ -107,19 +101,20 @@ impl Scene {
 
     pub fn model_init0(&mut self)->bool{
         //-------------Debug Scene sc1-------------
-	self.add( Sphere::new( 1e5,   Vec3::new( 1e5 + 1.0,     40.8, 81.6),Vec3::zero(),                Vec3::new(0.75, 0.25, 0.25), Refl::Diff ));//left
-	self.add( Sphere::new( 1e5,   Vec3::new(-1e5 + 99.0,    40.8, 81.6),Vec3::zero(),                Vec3::new(0.25, 0.25, 0.75), Refl::Diff ));//right
-	self.add( Sphere::new( 1e5,   Vec3::new(50.0,            40.8, 1e5),Vec3::zero(),                Vec3::new(0.75, 0.75, 0.75), Refl::Diff ));//front
-	self.add( Sphere::new( 1e5,   Vec3::new(50.0,    40.8,-1e5 + 170.0),Vec3::zero(),                Vec3::zero(), Refl::Diff ));//back
-	self.add( Sphere::new( 1e5,   Vec3::new(50.0,            1e5, 81.6),Vec3::zero(),                Vec3::new(0.75, 0.75, 0.75), Refl::Diff ));//bottom
-	self.add( Sphere::new( 1e5,   Vec3::new(50.0,-1e5 + 81.6+4.0, 81.6),Vec3::zero(),                Vec3::new(0.75, 0.75, 0.75), Refl::Diff ));//top
-	self.add( Sphere::new( 16.5,  Vec3::new(27.0,           16.5, 47.0),Vec3::zero(),                Vec3::new(1.0, 1.0, 1.0) * 0.999, Refl::Spec));
-	self.add( Sphere::new( 16.5,  Vec3::new(73.0,           16.5, 78.0),Vec3::zero(),                Vec3::new(1.0, 1.0, 1.0) * 0.999, Refl::Refr));
-	self.add( Sphere::new( 600.0, Vec3::new(50.0, 681.6-0.27+4.0, 81.6),Vec3::new(12.0, 12.0, 12.0), Vec3::zero(), Refl::Diff));
+	self.add( Sphere::new( 1e5,   Vec3::new( 1e5 + 1.0,     40.8, 81.6),Box::new(Diffuse::new(Vec3::new(0.75, 0.25, 0.25))), ));//left
+	self.add( Sphere::new( 1e5,   Vec3::new(-1e5 + 99.0,    40.8, 81.6),Box::new(Diffuse::new(Vec3::new(0.25, 0.25, 0.75))), ));//right
+	self.add( Sphere::new( 1e5,   Vec3::new(50.0,            40.8, 1e5),Box::new(Diffuse::new(Vec3::new(0.75, 0.75, 0.75))), ));//front
+	self.add( Sphere::new( 1e5,   Vec3::new(50.0,    40.8,-1e5 + 170.0),Box::new(Diffuse::new(Vec3::zero())),                 ));//back
+	self.add( Sphere::new( 1e5,   Vec3::new(50.0,            1e5, 81.6),Box::new(Diffuse::new(Vec3::new(0.75, 0.75, 0.75))),  ));//bottom
+	self.add( Sphere::new( 1e5,   Vec3::new(50.0,-1e5 + 81.6+4.0, 81.6),Box::new(Diffuse::new(Vec3::new(0.75, 0.75, 0.75))),  ));//top
+	self.add( Sphere::new( 16.5,  Vec3::new(27.0,           16.5, 47.0),Box::new(Mirror::new(Vec3::new(1.0, 1.0, 1.0) * 0.999)),));//mirror
+	self.add( Sphere::new( 16.5,  Vec3::new(73.0,           16.5, 78.0),Box::new(Refract::new(Vec3::new(1.0, 1.0, 1.0) * 0.999)), ));//refrac
+	self.add( Sphere::new( 600.0, Vec3::new(50.0, 681.6-0.27+4.0, 81.6),Box::new(DiffuseLight::new(Vec3::new(12.0, 12.0, 12.0))), ));//light
 	true
     }
-    
+}    
 
+/*
     pub fn model_init1(&mut self)->bool{
         //----------cornel box sc1-----------
         self.add( Sphere::new( 1e5,   Vec3::new(1e5 + 1.0,      40.8, 81.6), Vec3::zero(),                 Vec3::new(0.75, 0.25, 0.25), Refl::Diff ));
@@ -317,6 +312,6 @@ impl Scene {
         self.add( Sphere::new(6.5, Vec3::new(50.0,1.8+6.0*2.0+16.0*0.6*2.0+11.0*0.6*2.0+7.0*0.6,47.0),   Vec3::zero(), scc,  Refl::Diff));//"tree"
 	true
     }
+*/
 
-}
 
