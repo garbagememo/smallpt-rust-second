@@ -65,6 +65,7 @@ pub struct InterStruct{
 // #[derive(Default)]
 pub struct Scene {
     pub objects: Vec<Sphere>,
+    pub model_name:String,
 }
 
 impl Scene {
@@ -75,6 +76,7 @@ impl Scene {
     pub fn init() -> Scene {
 	Scene {
 	    objects: vec![],
+        model_name:String::from("null"),
         }
     }
     pub fn intersect(&self, r: &Ray) -> InterStruct {
@@ -96,32 +98,61 @@ impl Scene {
 
     pub fn model_init0(&mut self)->bool{
         //-------------Debug Scene sc1-------------
-	    self.add( Sphere::new( 1e5,   Vec3::new( 1e5 + 1.0,     40.8, 81.6),Box::new(Diffuse::new(BLACK,Vec3::new(0.75, 0.25, 0.25))),));//left
-	    self.add( Sphere::new( 1e5,   Vec3::new(-1e5 + 99.0,    40.8, 81.6),Box::new(Diffuse::new(BLACK,Vec3::new(0.25, 0.25, 0.75))),));//right
-	    self.add( Sphere::new( 1e5,   Vec3::new(50.0,            40.8, 1e5),Box::new(Diffuse::new(BLACK,Vec3::new(0.75, 0.75, 0.75))),));//front
-	    self.add( Sphere::new( 1e5,   Vec3::new(50.0,    40.8,-1e5 + 170.0),Box::new(Diffuse::new(BLACK,BLACK)),));//back
-	    self.add( Sphere::new( 1e5,   Vec3::new(50.0,            1e5, 81.6),Box::new(Diffuse::new(BLACK,Vec3::new(0.75, 0.75, 0.75))),));//bottom
-	    self.add( Sphere::new( 1e5,   Vec3::new(50.0,-1e5 + 81.6+4.0, 81.6),Box::new(Diffuse::new(BLACK,Vec3::new(0.75, 0.75, 0.75))),));//top
-	    self.add( Sphere::new( 16.5,  Vec3::new(27.0,           16.5, 47.0),Box::new(Mirror::new( BLACK,Vec3::new(1.0, 1.0, 1.0) * 0.999)),));//mirror
-	    self.add( Sphere::new( 16.5,  Vec3::new(73.0,           16.5, 78.0),Box::new(Refract::new(BLACK,Vec3::new(1.0, 1.0, 1.0) * 0.999)),));//透明体
-	    self.add( Sphere::new( 600.0, Vec3::new(50.0, 681.6-0.27+4.0, 81.6),Box::new(Diffuse::new(Vec3::new(12.0, 12.0, 12.0),BLACK)),));//light
+        self.model_name=String::from("Cornell");
+	    self.add( Sphere::new( 1e5,   Vec3::new( 1e5 + 1.0,     40.8, 81.6),Box::new(Diffuse::new(Vec3::new(0.75, 0.25, 0.25))),));//left
+	    self.add( Sphere::new( 1e5,   Vec3::new(-1e5 + 99.0,    40.8, 81.6),Box::new(Diffuse::new(Vec3::new(0.25, 0.25, 0.75))),));//right
+	    self.add( Sphere::new( 1e5,   Vec3::new(50.0,            40.8, 1e5),Box::new(Diffuse::new(Vec3::new(0.75, 0.75, 0.75))),));//front
+	    self.add( Sphere::new( 1e5,   Vec3::new(50.0,    40.8,-1e5 + 170.0),Box::new(Diffuse::new(BLACK)),));//back
+	    self.add( Sphere::new( 1e5,   Vec3::new(50.0,            1e5, 81.6),Box::new(Diffuse::new(Vec3::new(0.75, 0.75, 0.75))),));//bottom
+	    self.add( Sphere::new( 1e5,   Vec3::new(50.0,-1e5 + 81.6+4.0, 81.6),Box::new(Diffuse::new(Vec3::new(0.75, 0.75, 0.75))),));//top
+	    self.add( Sphere::new( 16.5,  Vec3::new(27.0,           16.5, 47.0),Box::new(Mirror::new( Vec3::new(1.0, 1.0, 1.0) * 0.999)),));//mirror
+	    self.add( Sphere::new( 16.5,  Vec3::new(73.0,           16.5, 78.0),Box::new(Refract::new(Vec3::new(1.0, 1.0, 1.0) * 0.999)),));//透明体
+	    self.add( Sphere::new( 600.0, Vec3::new(50.0, 681.6-0.27+4.0, 81.6),Box::new(DiffuseLight::new(Vec3::new(12.0, 12.0, 12.0),BLACK)),));//light
 	    true
     }
     pub fn model_init2(&mut self)->bool{
         //-----------sky sc2--------------
+        self.model_name=String::from("Sky");
         let cen:Vec3=Vec3{x:50.0,y:40.8,z:-860.0};
-	    self.add( Sphere::new(1600.0, Vec3::new(1.0,0.0,2.0)*3000.0, Box::new(Diffuse::new(Vec3::new(1.0,0.9,0.8)*1.2e1*1.56*2.0, BLACK)),)); // sun
-	    self.add( Sphere::new(1560.0, Vec3::new(1.0,0.0,2.0)*3500.0, Box::new(Diffuse::new(Vec3::new(1.0,0.5,0.05)*4.8e1*1.56*2.0, BLACK)),)); // horizon sun2
-        self.add( Sphere::new(10000.0,cen+Vec3::new(0.0,0.0,-200.0), Box::new(Diffuse::new(Vec3::new(0.00063842, 0.02001478, 0.28923243)*6e-2*8.0,
-                                                                                           Vec3::new(0.7,0.7,1.0)*0.25)),)); // sky
+	    self.add( Sphere::new(1600.0, Vec3::new(1.0,0.0,2.0)*3000.0,
+                              Box::new(DiffuseLight::new(Vec3::new(1.0,0.9,0.8)*1.2e1*1.56*2.0, BLACK)),)); // sun
+	    self.add( Sphere::new(1560.0, Vec3::new(1.0,0.0,2.0)*3500.0,
+                              Box::new(DiffuseLight::new(Vec3::new(1.0,0.5,0.05)*4.8e1*1.56*2.0, BLACK)),)); // horizon sun2
+        self.add( Sphere::new(10000.0,cen+Vec3::new(0.0,0.0,-200.0),
+                              Box::new(DiffuseLight::new(Vec3::new(0.00063842, 0.02001478, 0.28923243)*6e-2*8.0,
+                                                         Vec3::new(0.7,0.7,1.0)*0.25)),)); // sky
 
-	    self.add( Sphere::new(100000.0,Vec3::new(50.0,-100000.0,0.0),Box::new(Diffuse::new(BLACK,Vec3::new(0.3,0.3,0.3))),)); // grnd
-	    self.add( Sphere::new(110000.0,Vec3::new(50.0,-110048.5,0.0),Box::new(Diffuse::new(Vec3::new(0.9,0.5,0.05)*4.0,BLACK)),));// horizon brightener
-	    self.add( Sphere::new(4e4,Vec3::new(50.0,-4e4-30.0,-3000.0),Box::new(Diffuse::new(BLACK,Vec3::new(0.2,0.2,0.2))),));// mountains
+	    self.add( Sphere::new(100000.0,Vec3::new(50.0,-100000.0,0.0),Box::new(Diffuse::new(Vec3::new(0.3,0.3,0.3))),)); // grnd
+	    self.add( Sphere::new(110000.0,Vec3::new(50.0,-110048.5,0.0),Box::new(DiffuseLight::new(Vec3::new(0.9,0.5,0.05)*4.0,BLACK)),));// horizon brightener
+	    self.add( Sphere::new(4e4,Vec3::new(50.0,-4e4-30.0,-3000.0),Box::new(Diffuse::new(Vec3::new(0.2,0.2,0.2))),));// mountains
 
-        self.add( Sphere::new(26.5,	Vec3::new(22.0,26.5,42.0),Box::new(Mirror::new(BLACK,Vec3::new(1.0,1.0,1.0)*0.596)),)); // white Mirr
-        self.add( Sphere::new(13.0,	Vec3::new(75.0,13.0,82.0),Box::new(Refract::new(BLACK,Vec3::new(0.96,0.96,0.96)*0.96)), ));// Glas
-        self.add( Sphere::new(22.0,	Vec3::new(87.0,22.0,24.0),Box::new(Refract::new(BLACK,Vec3::new(0.6,0.6,0.6)*0.696)),));    // Glas2
+        self.add( Sphere::new(26.5,	Vec3::new(22.0,26.5,42.0),Box::new(Mirror::new(Vec3::new(1.0,1.0,1.0)*0.596)),)); // white Mirr
+        self.add( Sphere::new(13.0,	Vec3::new(75.0,13.0,82.0),Box::new(Refract::new(Vec3::new(0.96,0.96,0.96)*0.96)), ));// Glas
+        self.add( Sphere::new(22.0,	Vec3::new(87.0,22.0,24.0),Box::new(Refract::new(Vec3::new(0.6,0.6,0.6)*0.696)),));    // Glas2
+        true
+    }
+    pub fn model_init7(&mut self)->bool{
+        //----------------wada  sc7-------------
+       self.model_name=String::from("Wada");
+ 	    
+        let r:f64=60.0;
+        let t:f64=FRAC_PI_6;//30.0*PI/180.0;
+        let d:f64=r/(FRAC_SQRT_3/2.0) ;//cos(T);
+        //let Z:f64=60.0;
+
+        self.add( Sphere::new(1e5, Vec3::new(50.0, 100.0, 0.0),
+                              Box::new(DiffuseLight::new(Vec3::new(1.0,1.0,1.0)*3e0,BLACK)),)); // sky
+        self.add( Sphere::new(1e5, Vec3::new(50.0, -1e5-d-r, 0.0),Box::new(Diffuse::new(Vec3::new(0.1,0.1,0.1))),));//grnd
+        self.add( Sphere::new(r, Vec3::new(50.0,40.8,62.0)+Vec3::new( t.cos(),t.sin(),0.0)*d,
+                              Box::new(Mirror::new(Vec3::new(1.0,0.3,0.3)*0.999)),)); //red
+        self.add( Sphere::new(r, Vec3::new(50.0,40.8,62.0)+Vec3::new(-t.cos(),t.sin(),0.0)*d,
+                              Box::new(Mirror::new(Vec3::new(0.3,1.0,0.3)*0.999)), )); //grn
+        self.add( Sphere::new(r, Vec3::new(50.0,40.8,62.0)+Vec3::new(0.0,-1.0,0.0)*d,
+                              Box::new(Mirror::new(Vec3::new(0.3,0.3,1.0)*0.999)),)); //blue
+        self.add( Sphere::new(r, Vec3::new(50.0,40.8,62.0)+Vec3::new(0.0, 0.0,-1.0)*d,
+                              Box::new(Mirror::new( Vec3::new(0.53,0.53,0.53)*0.999)), )); //back
+        self.add( Sphere::new(r, Vec3::new(50.0,40.8,62.0)+Vec3::new(0.0, 0.0, 1.0)*d,
+                              Box::new(Refract::new(Vec3::new(1.0,1.0,1.0)*0.999)), )); //front
         true
     }
 }    

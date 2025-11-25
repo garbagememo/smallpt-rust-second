@@ -1,6 +1,7 @@
 
 use std::fs;
 use std::io::Write;
+use std::path::{Path, PathBuf};
 use std::ops::{Add, Mul, Rem, Sub};
 
 #[derive(Copy, Clone, Debug)]
@@ -100,5 +101,52 @@ pub fn save_ppm_file(filename: &str, image: Vec<Color>, width: usize, height: us
         )
         .unwrap();
     }
+}
+
+/// 画像データをPPM形式でファイルに保存します。
+/// filenameに拡張子がない、または".ppm"でない場合は、自動で".ppm"に修正します。
+pub fn save_ppm_file2(filename: &str, image: Vec<Color>, width: usize, height: usize) {
+    // 1. PathBufを作成し、拡張子をチェック・修正する
+    let path = Path::new(filename);
+    let mut final_path = path.to_path_buf();
+
+    // 既存の拡張子を取得し、小文字にして".ppm"と比較します
+    let extension_is_ppm = final_path
+        .extension()
+        .and_then(|ext| ext.to_str()) // OsStrから&strへ変換
+        .map(|ext| ext.eq_ignore_ascii_case("ppm")) // 小文字・大文字を無視して"ppm"と比較
+        .unwrap_or(false); // 拡張子がない場合はfalseとする
+
+    if !extension_is_ppm {
+        // 拡張子がない、または"ppm"でない場合は、"ppm"に設定/置換する
+        // 例: "output" -> "output.ppm"
+        // 例: "output.jpg" -> "output.ppm"
+        final_path.set_extension("ppm");
+    }
+
+    // 処理後のファイル名を表示（確認用）
+    println!("Saving image to: {}", final_path.display());
+
+    // 2. ファイルを作成し、失敗したらパニック
+    // final_pathはPathBufなので、参照(&Path)として渡します
+    let mut f = fs::File::create(&final_path).unwrap();
+    
+    // 3. ヘッダー情報の書き込み
+    writeln!(f, "P3\n{} {}\n{}", width, height, 255).unwrap();
+
+    // 4. ピクセルデータの書き込み
+    // PPMファイルは通常、3ピクセルごとに改行やスペースを入れますが、
+    // 簡易的なPPMビューアの互換性を考慮し、一行に収まるように書き出します。
+    for i in 0..(width * (height)) {
+        write!(
+            f,
+            "{} {} {} ",
+            to_int(image[i as usize].x),
+            to_int(image[i as usize].y),
+            to_int(image[i as usize].z)
+        )
+        .unwrap();
+    }
+    println!("File saved successfully.");
 }
 
