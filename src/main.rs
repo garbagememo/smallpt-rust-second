@@ -43,9 +43,10 @@ fn main() {
     match args.m{
         0=> scene.model_init0(),
         2=> scene.model_init2(),
+        7=> scene.model_init7(),
         _=> scene.model_init0(),
     };
-
+    println!("Model Name = {}",scene.model_name);
 
     let cam = Ray::new(
         Vec3::new(50.0, 52.0, 295.6),
@@ -100,5 +101,5 @@ fn main() {
         }
     });
 
-    save_ppm_file(&args.output, image, w, h);
+    save_ppm_file2(&scene.model_name, image, w, h);
 }
