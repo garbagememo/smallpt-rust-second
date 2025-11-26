@@ -1,8 +1,11 @@
-
 use std::fs;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::{Path};
 use std::ops::{Add, Mul, Rem, Sub};
+
+pub fn random() -> f64 {
+    rand::random::<f64>()
+}
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vec3 {
