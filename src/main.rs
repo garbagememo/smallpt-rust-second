@@ -34,16 +34,20 @@ fn main() {
     println!("{:?}", args);
     
 
-	
+    
     let w: usize = args.w;
     let h: usize = (480.0*w as f64/640.0) as usize;
     let samps = args.s;
     println!("samps={}",samps);
-	let mut scene=Scene::init();
+    let mut scene=Scene::new();
     match args.m{
         0=> scene.model_init0(),
         2=> scene.model_init2(),
+        3=> scene.model_init3(),
+        4=> scene.model_init4(),
+        5=> scene.model_init5(),
         7=> scene.model_init7(),
+        8=> scene.model_init8(),
         _=> scene.model_init0(),
     };
     println!("Model Name = {}",scene.model_name);
@@ -67,7 +71,7 @@ fn main() {
                 samps * 4,
                 100.0 * (y as f64) / ((h as f64) - 1.0)
             )
-            .unwrap();
+                .unwrap();
         }
         for x in 0..w {
             let mut r = Vec3::zero();
@@ -89,7 +93,7 @@ fn main() {
                         let d = cx
                             * ((((sx as f64) + 0.5 + dx) / 2.0 + (x as f64)) / (w as f64) - 0.5)
                             + cy * ((((sy as f64) + 0.5 + dy) / 2.0 + (y2 as f64)) / (h as f64)
-                                - 0.5)
+                                    - 0.5)
                             + cam.d;
                         r = r + radiance(&(Ray::new(cam.o + d * 140.0, d.norm())), 0,&scene)
                             * (1.0 / (samps as f64));
@@ -101,5 +105,5 @@ fn main() {
         }
     });
 
-    save_ppm_file2(&scene.model_name, image, w, h);
+    save_ppm_file2(&args.output, image, w, h);
 }
