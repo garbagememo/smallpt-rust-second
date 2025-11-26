@@ -2,4 +2,5 @@
 なのでVec<Sphere>のStructを作り、トレイトでintersectionを実装  
 またオプションで  
   s sampling数 w:横幅 m:モデル番号 を指定可能に  
-  
+今はradiance内のマテリアルごとの分岐をマテリアル側で処理する形に変更  
+  （レイトレ一週間風味）
