@@ -89,26 +89,10 @@ fn to_int(x: f64) -> u8 {
     (clamp(x).powf(1.0 / 2.2) * 255.0 + 0.5) as u8
 }
 
-#[allow(dead_code)]
-pub fn save_ppm_file(filename: &str, image: Vec<Color>, width: usize, height: usize) {
-    let mut f = fs::File::create(filename).unwrap();
-    
-    writeln!(f, "P3\n{} {}\n{}", width, height, 255).unwrap();
-    for i in 0..(width * (height)) {
-        write!(
-            f,
-            "{} {} {} ",
-            to_int(image[i as usize].x),
-            to_int(image[i as usize].y),
-            to_int(image[i as usize].z)
-        )
-        .unwrap();
-    }
-}
 
 /// 画像データをPPM形式でファイルに保存します。
 /// filenameに拡張子がない、または".ppm"でない場合は、自動で".ppm"に修正します。
-pub fn save_ppm_file2(filename: &str, image: Vec<Color>, width: usize, height: usize) {
+pub fn save_ppm_file(filename: &str, image: Vec<Color>, width: usize, height: usize) {
     // 1. PathBufを作成し、拡張子をチェック・修正する
     let path = Path::new(filename);
     let mut final_path = path.to_path_buf();
