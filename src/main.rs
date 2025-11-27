@@ -46,8 +46,11 @@ fn main() {
         3=> scene.model_init3(),
         4=> scene.model_init4(),
         5=> scene.model_init5(),
+        6=> scene.model_init6(),
         7=> scene.model_init7(),
         8=> scene.model_init8(),
+        8=> scene.model_init8(),
+        9=> scene.model_init9(),
         _=> scene.model_init0(),
     };
     println!("Model Name = {}",scene.model_name);
@@ -104,6 +107,5 @@ fn main() {
             }
         }
     });
-
-    save_ppm_file2(&args.output, image, w, h);
+    save_ppm_file(&args.output, image, w, h);
 }
