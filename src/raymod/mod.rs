@@ -2,6 +2,7 @@ mod vec3;
 mod rayunit;
 mod optarg;
 mod material;
+
 pub use self::vec3::*;
 pub use self::rayunit::*;
 pub use self::material::*;
