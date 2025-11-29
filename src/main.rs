@@ -1,9 +1,6 @@
 mod raymod;
 use raymod::*;
-use std::sync::Arc;
-
 use rayon::prelude::*;
-
 use std::io::Write;
 
 fn radiance(r: &Ray, depth: u8,	scene: &Scene) -> Vec3 {
@@ -53,9 +50,8 @@ fn main() {
         6=> scene.model_init6(),
         7=> scene.model_init7(),
         8=> scene.model_init8(),
-        8=> scene.model_init8(),
         9=> scene.model_init9(),
-        10=>{cam=scene.RandomScene(w,h);},
+        10=>{cam=scene.random_scene(w,h);},
         _=> scene.model_init0(),
     };
     println!("Model Name = {}",scene.model_name);
