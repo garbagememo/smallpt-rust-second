@@ -1,8 +1,6 @@
 ﻿use crate::raymod::*;
 
-use std::f64::consts::*;
 use std::sync::Arc;
-
 
 pub struct Ray {
     pub o: Vec3,
@@ -30,16 +28,16 @@ impl HitInfo {
 pub struct Camera{
     p:Vec3,
     d:Vec3,
-    PlaneDist:f64,
+    plane_dist:f64,
     cx:Vec3,cy:Vec3,
     w:usize,h:usize,
 }
 
 impl Camera {
-    pub fn new(p:Vec3,d:Vec3,PlaneDist:f64,w:usize,h:usize)->Self{
+    pub fn new(p:Vec3,d:Vec3,plane_dist:f64,w:usize,h:usize)->Self{
         let cx=Vec3::new((w as f64) * 0.5135 / (h as f64), 0.0, 0.0);
         let cy= (cx % d).norm()*0.5135;
-        Camera{p,d,PlaneDist,cx,cy,w,h}
+        Camera{p,d,plane_dist,cx,cy,w,h}
     }
     pub fn at(&self,sx:usize,sy:usize,x:usize,y2:usize)->Ray{
         let r1 = 2.0 * random();
@@ -49,7 +47,7 @@ impl Camera {
         let d = self.cx * ((((sx as f64) + 0.5 + dx) / 2.0 + (x as f64)) / (self.w as f64) - 0.5)
             + self.cy * ((((sy as f64) + 0.5 + dy) / 2.0 + (y2 as f64)) / (self.h as f64)  - 0.5)
             + self.d;
-        Ray{ o:self.p + d * self.PlaneDist, d:d.norm()}
+        Ray{ o:self.p + d * self.plane_dist, d:d.norm()}
     }
 }
 

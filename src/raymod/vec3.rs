@@ -17,7 +17,6 @@ pub struct Vec3 {
 pub type Color = Vec3;
 pub const BLACK:Vec3 = Vec3{x:0.0,y:0.0,z:0.0};
 
-#[allow(dead_code)]
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
         Vec3 { x, y, z }

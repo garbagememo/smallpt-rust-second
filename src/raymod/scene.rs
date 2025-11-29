@@ -399,39 +399,39 @@ impl Scene {
                               Arc::new(Diffuse::new(  BLACK, scc)),  ));//"tree"
     }
     
-    pub fn RandomScene(& mut self,w:usize,h:usize)->Camera{
-        let Cen  = Vec3::new(50.0,40.8,-860.0);
-        let Cen1 = Vec3::new(75.0,25.0, 85.0);
-        let Cen2 = Vec3::new(45.0,25.0, 30.0);
-        let Cen3 = Vec3::new(15.0,25.0,-25.0);
+    pub fn random_scene(& mut self,w:usize,h:usize)->Camera{
+        let cen  = Vec3::new(50.0,40.8,-860.0);
+        let cen1 = Vec3::new(75.0,25.0, 85.0);
+        let cen2 = Vec3::new(45.0,25.0, 30.0);
+        let cen3 = Vec3::new(15.0,25.0,-25.0);
         self.add(Sphere::new(
             10000.0,
-            Cen+Vec3::new(0.0,0.0,-200.0)  ,
+            cen+Vec3::new(0.0,0.0,-200.0)  ,
             Arc::new(Diffuse::new(Vec3::new(0.6, 0.5, 0.7)*0.8, Vec3::new(0.7,0.9,1.0))),  )); // sky
         self.add(Sphere::new(100000.0, Vec3::new(50.0, -100000.0, 0.0),
                              Arc::new(Diffuse::new(BLACK, Vec3::new(0.4,0.4,0.4))),)); // grnd
-        self.add(Sphere::new(25.0,  Cen1 ,
+        self.add(Sphere::new(25.0,  cen1 ,
                              Arc::new(Mirror::new(BLACK,Vec3::new(0.9,0.9,0.9))), ));// mirror
-        self.add(Sphere::new(25.0,  Cen2 ,
+        self.add(Sphere::new(25.0,  cen2 ,
                              Arc::new(Refract::new(BLACK,Vec3::new(0.95,0.95,0.95))), )); // glass
-        self.add(Sphere::new(25.0,  Cen3 ,
+        self.add(Sphere::new(25.0,  cen3 ,
                              Arc::new(Diffuse::new(BLACK,Vec3::new(1.0,0.6,0.6)*0.696)), ));    // 乱反射
         for a in -11 .. 12 {
             for b in -11 .. 12 {
-                let RandomMatterial = random();
-                let Cen = Vec3::new( ((a as f64)+random())*25.0,5.0,((b as f64)+random() )*25.0);
-                if (Cen - Cen1) .length().sqrt()>(25.0*1.0) {
-                    if RandomMatterial<0.8 {
+                let random_material = random();
+                let cen = Vec3::new( ((a as f64)+random())*25.0,5.0,((b as f64)+random() )*25.0);
+                if (cen - cen1) .length().sqrt()>(25.0*1.0) {
+                    if random_material < 0.8 {
                         self.add(Sphere::new(
-                            5.0, Cen,
+                            5.0, cen,
                             Arc::new(Diffuse::new(BLACK,Vec3::new(random(),random(),random()))),));
-                    } else if RandomMatterial <0.95 {
+                    } else if random_material <0.95 {
                         self.add(Sphere::new(
-                            5.0,Cen,
+                            5.0,cen,
                             Arc::new(Mirror::new(BLACK,Vec3::new(random(),random(),random()))),));
                     } else {
                         self.add(Sphere::new(
-                            5.0,Cen,
+                            5.0,cen,
                             Arc::new(Refract::new(BLACK,Vec3::new(random(),random(),random()) )),));
                     }
                 }

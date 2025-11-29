@@ -34,7 +34,7 @@ impl Material for Diffuse {
     fn emitted(&self) -> Color {
         self.emit
     }
-    fn trace_ray(&self,r:&Ray,n:Vec3,nl:Vec3,o:Vec3)->TraceInfo {
+    fn trace_ray(&self,_r:&Ray,_n:Vec3,nl:Vec3,o:Vec3)->TraceInfo {
         let r1 = 2.0 * std::f64::consts::PI * random();
         let r2 = random();
         let r2s = r2.sqrt();
@@ -68,7 +68,7 @@ impl Material for Mirror {
     fn emitted(&self)->Color{
         self.emit
     }
-    fn trace_ray(&self,r:&Ray,n:Vec3,nl:Vec3,o:Vec3)->TraceInfo{
+    fn trace_ray(&self,r:&Ray,n:Vec3,_nl:Vec3,o:Vec3)->TraceInfo{
        TraceInfo::new(Ray::new(o, r.d - n * 2.0 * n.dot(&r.d)),1.0)
     }
 }

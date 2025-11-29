@@ -7,7 +7,7 @@ pub use self::vec3::*;
 pub use self::rayunit::*;
 pub use self::material::*;
 pub use self::optarg::*;
-pub use self::scene::*;
+
 
 pub const EPS: f64 = 1e-6;
 pub const INF: f64 = 1e20;
