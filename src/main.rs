@@ -2,6 +2,7 @@ mod raymod;
 use raymod::*;
 use rayon::prelude::*;
 use std::io::Write;
+use std::time::*;
 
 fn radiance(r: &Ray, depth: u8,	scene: &Scene) -> Vec3 {
     let hit_info = scene.intersect(r);
@@ -43,20 +44,23 @@ fn main() {
     let mut scene=Scene::new();
     match args.m{
         0=> {scene.model_init0();},
-        2=> scene.model_init2(),
-        3=> scene.model_init3(),
-        4=> scene.model_init4(),
-        5=> scene.model_init5(),
-        6=> scene.model_init6(),
-        7=> scene.model_init7(),
-        8=> scene.model_init8(),
-        9=> scene.model_init9(),
+//        2=> scene.model_init2(),
+//        3=> scene.model_init3(),
+//        4=> scene.model_init4(),
+//        5=> scene.model_init5(),
+//        6=> scene.model_init6(),
+//        7=> scene.model_init7(),
+//        8=> scene.model_init8(),
+//        9=> scene.model_init9(),
         10=>{cam=scene.random_scene(w,h);},
         _=> scene.model_init0(),
     };
     println!("Model Name = {}",scene.model_name);
 
     let mut image = vec![Color::zero(); (w * h) as usize];
+
+    println!("-> 処理を開始します...");
+    let start = Instant::now();
 
     let bands: Vec<(usize, &mut [Color])> = image.chunks_mut(w as usize).enumerate().collect();
     bands.into_par_iter().for_each(|(y, band)| {
@@ -85,6 +89,9 @@ fn main() {
             }
         }
     });
-
+    println!("-> 処理を終了しました...");
+    let duration = start.elapsed();
+    println!("   秒: {:.4}s", duration.as_secs_f64());
+    
     save_ppm_file2(&args.output, image, w, h);
 }
