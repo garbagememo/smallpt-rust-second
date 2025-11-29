@@ -114,19 +114,32 @@ impl BVH {
 }
 
 impl Shape for BVH {
-    fn hit(&self, ray: &Ray, t_min: f64, mut t_max: f64) -> Option<HitInfo> {
-        if !self.bbox.hit(&ray, t_min, t_max) {
+    fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
+        if !self.bbox.hit(&ray, EPS, INF) {
             return None;
         }
         match &self.tree {
-            BVHNode::Leaf(leaf) => leaf.hit(&ray, t_min, t_max),
+            BVHNode::Leaf(leaf) => leaf.intersect(&ray),
             BVHNode::Branch { left, right } => {
-                let left = left.hit(&ray, t_min, t_max);
-                if let Some(l) = &left {
-                    t_max = l.t
-                };
-                let right = right.hit(&ray, t_min, t_max);
-                if right.is_some() { right } else { left }
+                let left_val = left.intersect(&ray);
+                let right_val = right.intersect(&ray);
+                match (left_val, right_val) {
+                    // どちらも交差なし
+                    (None, None) => None,
+                    // 左のみ交差あり
+                    (Some(l), None) => Some(l),
+                    // 右のみ交差あり
+                    (None, Some(r)) => Some(r),
+                    // どちらも交差あり
+                    (Some(l), Some(r)) => {
+                        // t値が小さい方（より近い方）を返す
+                        if l.t < r.t {
+                            Some(l)
+                        } else {
+                            Some(r)
+                        }
+                    }
+                }
             }
         }
     }

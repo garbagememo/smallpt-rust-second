@@ -5,56 +5,189 @@ use std::sync::Arc;
 
 // #[derive(Default)]
 
+pub struct Camera{
+    pub p:Vec3,
+    pub d:Vec3,
+    pub plane_dist:f64,
+    pub cx:Vec3,
+    pub cy:Vec3,
+    pub w:usize,
+    pub h:usize,
+}
+
+impl Camera {
+    pub fn new(p:Vec3,d:Vec3,plane_dist:f64,w:usize,h:usize)->Self{
+        let cx=Vec3::new((w as f64) * 0.5135 / (h as f64), 0.0, 0.0);
+        let cy= (cx % d).norm()*0.5135;
+        Camera{p,d,plane_dist,cx,cy,w,h}
+    }
+    pub fn at(&self,sx:usize,sy:usize,x:usize,y2:usize)->Ray{
+        let r1 = 2.0 * random();
+        let dx = if r1 < 1.0 { r1.sqrt() - 1.0 } else { 1.0 - (2.0 - r1).sqrt() };
+        let r2 = 2.0 * random();
+        let dy = if r2 < 1.0 { r2.sqrt() - 1.0 } else { 1.0 - (2.0 - r2).sqrt() };
+        let d = self.cx * ((((sx as f64) + 0.5 + dx) / 2.0 + (x as f64)) / (self.w as f64) - 0.5)
+            + self.cy * ((((sy as f64) + 0.5 + dy) / 2.0 + (y2 as f64)) / (self.h as f64)  - 0.5)
+            + self.d;
+        Ray{ o:self.p + d * self.plane_dist, d:d.norm()}
+    }
+}
+
 impl Scene {
-    pub fn model_init0(&mut self)  {
+    pub fn model_init_t(&mut self)  {
         //-------------Debug Scene sc1-------------
         self.model_name = String::from("Cornell");
-        self.add(Sphere::new(
+        let mut model_data: Vec<Box<dyn Shape>> = Vec::new();
+        model_data.push(Box::new(Sphere::new(
             1e5,
             Vec3::new(1e5 + 1.0, 40.8, 81.6),
             Arc::new(Diffuse::new(BLACK,Vec3::new(0.75, 0.25, 0.25))),
-        )); //left
-        self.add(Sphere::new(
+        ))); //left
+         model_data.push(Box::new(Sphere::new(
             1e5,
             Vec3::new(-1e5 + 99.0, 40.8, 81.6),
             Arc::new(Diffuse::new(BLACK,Vec3::new(0.25, 0.25, 0.75))),
-        )); //right
-        self.add(Sphere::new(
+        ))); //right
+         model_data.push(Box::new(Sphere::new(
             1e5,
             Vec3::new(50.0, 40.8, 1e5),
             Arc::new(Diffuse::new(BLACK,Vec3::new(0.75, 0.75, 0.75))),
-        )); //front
-        self.add(Sphere::new(
+        ))); //front
+         model_data.push(Box::new(Sphere::new(
             1e5,
             Vec3::new(50.0, 40.8, -1e5 + 170.0),
             Arc::new(Diffuse::new(BLACK,BLACK)),
-        )); //back
-        self.add(Sphere::new(
+        ))); //back
+         model_data.push(Box::new(Sphere::new(
             1e5,
             Vec3::new(50.0, 1e5, 81.6),
             Arc::new(Diffuse::new(BLACK,Vec3::new(0.75, 0.75, 0.75))),
-        )); //bottom
-        self.add(Sphere::new(
+        ))); //bottom
+         model_data.push(Box::new(Sphere::new(
             1e5,
             Vec3::new(50.0, -1e5 + 81.6 + 4.0, 81.6),
             Arc::new(Diffuse::new(BLACK,Vec3::new(0.75, 0.75, 0.75))),
-        )); //top
-        self.add(Sphere::new(
+        ))); //top
+         model_data.push(Box::new(Sphere::new(
             16.5,
             Vec3::new(27.0, 16.5, 47.0),
             Arc::new(Mirror::new(BLACK,Vec3::new(1.0, 1.0, 1.0) * 0.999)),
-        )); //mirror
-        self.add(Sphere::new(
+        ))); //mirror
+         model_data.push(Box::new(Sphere::new(
             16.5,
             Vec3::new(73.0, 16.5, 78.0),
             Arc::new(Refract::new(BLACK,Vec3::new(1.0, 1.0, 1.0) * 0.999)),
-        )); //透明体
-        self.add(Sphere::new(
+        ))); //透明体
+         model_data.push(Box::new(Sphere::new(
             600.0,
             Vec3::new(50.0, 681.6 - 0.27 + 4.0, 81.6),
             Arc::new(Diffuse::new(Vec3::new(12.0, 12.0, 12.0), BLACK)),
-        )); //light
+         ))); //light
+         self.add(Box::new(BVH::new(model_data)));
     }
+    
+    pub fn model_init0(&mut self)  {
+        //-------------Debug Scene sc1-------------
+        self.model_name = String::from("Cornell");
+        self.add(Box::new(Sphere::new(
+            1e5,
+            Vec3::new(1e5 + 1.0, 40.8, 81.6),
+            Arc::new(Diffuse::new(BLACK,Vec3::new(0.75, 0.25, 0.25))),
+        ))); //left
+        self.add(Box::new(Sphere::new(
+            1e5,
+            Vec3::new(-1e5 + 99.0, 40.8, 81.6),
+            Arc::new(Diffuse::new(BLACK,Vec3::new(0.25, 0.25, 0.75))),
+        ))); //right
+        self.add(Box::new(Sphere::new(
+            1e5,
+            Vec3::new(50.0, 40.8, 1e5),
+            Arc::new(Diffuse::new(BLACK,Vec3::new(0.75, 0.75, 0.75))),
+        ))); //front
+        self.add(Box::new(Sphere::new(
+            1e5,
+            Vec3::new(50.0, 40.8, -1e5 + 170.0),
+            Arc::new(Diffuse::new(BLACK,BLACK)),
+        ))); //back
+        self.add(Box::new(Sphere::new(
+            1e5,
+            Vec3::new(50.0, 1e5, 81.6),
+            Arc::new(Diffuse::new(BLACK,Vec3::new(0.75, 0.75, 0.75))),
+        ))); //bottom
+        self.add(Box::new(Sphere::new(
+            1e5,
+            Vec3::new(50.0, -1e5 + 81.6 + 4.0, 81.6),
+            Arc::new(Diffuse::new(BLACK,Vec3::new(0.75, 0.75, 0.75))),
+        ))); //top
+        self.add(Box::new(Sphere::new(
+            16.5,
+            Vec3::new(27.0, 16.5, 47.0),
+            Arc::new(Mirror::new(BLACK,Vec3::new(1.0, 1.0, 1.0) * 0.999)),
+        ))); //mirror
+        self.add(Box::new(Sphere::new(
+            16.5,
+            Vec3::new(73.0, 16.5, 78.0),
+            Arc::new(Refract::new(BLACK,Vec3::new(1.0, 1.0, 1.0) * 0.999)),
+        ))); //透明体
+        self.add(Box::new(Sphere::new(
+            600.0,
+            Vec3::new(50.0, 681.6 - 0.27 + 4.0, 81.6),
+            Arc::new(Diffuse::new(Vec3::new(12.0, 12.0, 12.0), BLACK)),
+        ))); //light
+    }
+pub fn random_scene(& mut self,w:usize,h:usize)->Camera{
+    let cen  = Vec3::new(50.0,40.8,-860.0);
+    let cen1 = Vec3::new(75.0,25.0, 85.0);
+    let cen2 = Vec3::new(45.0,25.0, 30.0);
+    let cen3 = Vec3::new(15.0,25.0,-25.0);
+    self.add(Box::new(Sphere::new(
+        10000.0,
+        cen+Vec3::new(0.0,0.0,-200.0)  ,
+        Arc::new(Diffuse::new(Vec3::new(0.6, 0.5, 0.7)*0.8, Vec3::new(0.7,0.9,1.0))),  ))); // sky
+    self.add(Box::new(Sphere::new(100000.0, Vec3::new(50.0, -100000.0, 0.0),
+                                  Arc::new(Diffuse::new(BLACK, Vec3::new(0.4,0.4,0.4))),))); // grnd
+    self.add(Box::new(Sphere::new(25.0,  cen1 ,
+                                  Arc::new(Mirror::new(BLACK,Vec3::new(0.9,0.9,0.9))), )));// mirror
+    self.add(Box::new(Sphere::new(25.0,  cen2 ,
+                                  Arc::new(Refract::new(BLACK,Vec3::new(0.95,0.95,0.95))), ))); // glass
+    self.add(Box::new(Sphere::new(25.0,  cen3 ,
+                                  Arc::new(Diffuse::new(BLACK,Vec3::new(1.0,0.6,0.6)*0.696)), )));    // 乱反射
+
+    let mut model_data: Vec<Box<dyn Shape>> = Vec::new();
+
+    for a in -11 .. 12 {
+        for b in -11 .. 12 {
+            let random_material = random();
+            let cen = Vec3::new( ((a as f64)+random())*25.0,5.0,((b as f64)+random() )*25.0);
+            if (cen - cen1) .length().sqrt()>(25.0*1.0) {
+                if random_material < 0.8 {
+                    model_data.push(Box::new(Sphere::new(
+                        5.0, cen,
+                        Arc::new(Diffuse::new(BLACK,Vec3::new(random(),random(),random()))),)));
+                } else if random_material <0.95 {
+                    model_data.push(Box::new(Sphere::new(
+                        5.0,cen,
+                        Arc::new(Mirror::new(BLACK,Vec3::new(random(),random(),random()))),)));
+                } else {
+                    model_data.push(Box::new(Sphere::new(
+                        5.0,cen,
+                        Arc::new(Refract::new(BLACK,Vec3::new(random(),random(),random()) )),)));
+                }
+            }
+        }
+    }
+    self.add(Box::new(BVH::new(model_data)));
+
+    return Camera::new(
+        Vec3::new(55.0, 58.0, 245.6),
+        Vec3::new(0.0, -0.24, -1.0).norm(),
+        50.0,
+        w,h);
+}
+
+}
+/*
+
     
     pub fn model_init2(&mut self)  {
         //-----------sky sc2--------------
@@ -399,53 +532,12 @@ impl Scene {
                               Arc::new(Diffuse::new(  BLACK, scc)),  ));//"tree"
     }
     
-    pub fn random_scene(& mut self,w:usize,h:usize)->Camera{
-        let cen  = Vec3::new(50.0,40.8,-860.0);
-        let cen1 = Vec3::new(75.0,25.0, 85.0);
-        let cen2 = Vec3::new(45.0,25.0, 30.0);
-        let cen3 = Vec3::new(15.0,25.0,-25.0);
-        self.add(Sphere::new(
-            10000.0,
-            cen+Vec3::new(0.0,0.0,-200.0)  ,
-            Arc::new(Diffuse::new(Vec3::new(0.6, 0.5, 0.7)*0.8, Vec3::new(0.7,0.9,1.0))),  )); // sky
-        self.add(Sphere::new(100000.0, Vec3::new(50.0, -100000.0, 0.0),
-                             Arc::new(Diffuse::new(BLACK, Vec3::new(0.4,0.4,0.4))),)); // grnd
-        self.add(Sphere::new(25.0,  cen1 ,
-                             Arc::new(Mirror::new(BLACK,Vec3::new(0.9,0.9,0.9))), ));// mirror
-        self.add(Sphere::new(25.0,  cen2 ,
-                             Arc::new(Refract::new(BLACK,Vec3::new(0.95,0.95,0.95))), )); // glass
-        self.add(Sphere::new(25.0,  cen3 ,
-                             Arc::new(Diffuse::new(BLACK,Vec3::new(1.0,0.6,0.6)*0.696)), ));    // 乱反射
-        for a in -11 .. 12 {
-            for b in -11 .. 12 {
-                let random_material = random();
-                let cen = Vec3::new( ((a as f64)+random())*25.0,5.0,((b as f64)+random() )*25.0);
-                if (cen - cen1) .length().sqrt()>(25.0*1.0) {
-                    if random_material < 0.8 {
-                        self.add(Sphere::new(
-                            5.0, cen,
-                            Arc::new(Diffuse::new(BLACK,Vec3::new(random(),random(),random()))),));
-                    } else if random_material <0.95 {
-                        self.add(Sphere::new(
-                            5.0,cen,
-                            Arc::new(Mirror::new(BLACK,Vec3::new(random(),random(),random()))),));
-                    } else {
-                        self.add(Sphere::new(
-                            5.0,cen,
-                            Arc::new(Refract::new(BLACK,Vec3::new(random(),random(),random()) )),));
-                    }
-                }
-            }
-        }
-        return Camera::new(
-            Vec3::new(55.0, 58.0, 245.6),
-            Vec3::new(0.0, -0.24, -1.0).norm(),
-            50.0,
-            w,h);
-    }
-}
-/*
-    pub fn model_init1(&mut self)->bool{
+    
+
+
+
+
+pub fn model_init1(&mut self)->bool{
         //----------cornel box sc1-----------
         self.add( Sphere::new( 1e5,   Vec3::new(1e5 + 1.0,      40.8, 81.6),BLACK,                 Vec3::new(0.75, 0.25, 0.25), Refl::Diff ));
         self.add( Sphere::new( 1e5,   Vec3::new(-1e5 + 99.0,    40.8, 81.6),BLACK,                 Vec3::new(0.25, 0.25, 0.75), Refl::Diff ));

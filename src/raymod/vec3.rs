@@ -2,6 +2,7 @@ use std::fs;
 use std::io::Write;
 use std::path::{Path};
 use std::ops::{Add, Mul, Div, Rem, Sub};
+use std::ops::{Index, IndexMut};
 
 pub fn random() -> f64 {
     rand::random::<f64>()
@@ -80,6 +81,41 @@ impl Rem for Vec3 {
         )
     }
 }
+
+// ----------------------------------------------------
+// 読み取りアクセス (Vec3[i]) を可能にする実装
+// ----------------------------------------------------
+impl Index<usize> for Vec3 {
+    // 参照が返す型を指定
+    type Output = f64;
+
+    // インデックス i に対応するフィールドの参照を返す
+    fn index(&self, i: usize) -> &Self::Output {
+        match i {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            _ => panic!("Index out of bounds: {}", i), // 範囲外のインデックスはパニック
+        }
+    }
+}
+
+// ----------------------------------------------------
+// 書き込みアクセス (Vec3[i] = value) を可能にする実装
+// ----------------------------------------------------
+impl IndexMut<usize> for Vec3 {
+    // インデックス i に対応するフィールドの可変参照を返す
+    fn index_mut(&mut self, i: usize) -> &mut Self::Output {
+        match i {
+            0 => &mut self.x,
+            1 => &mut self.y,
+            2 => &mut self.z,
+            _ => panic!("Index out of bounds: {}", i),
+        }
+    }
+}
+
+
 
 fn clamp(x: f64) -> f64 {
     if x < 0.0 {

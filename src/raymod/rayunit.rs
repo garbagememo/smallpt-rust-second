@@ -1,5 +1,4 @@
 ﻿use crate::raymod::*;
-
 use std::sync::Arc;
 
 pub struct Ray {
@@ -12,6 +11,7 @@ impl Ray {
         Ray { o, d }
     }
 }
+
 pub struct HitInfo {
     pub t: f64,
     pub p: Vec3,
@@ -25,31 +25,11 @@ impl HitInfo {
     }
 }
 
-pub struct Camera{
-    p:Vec3,
-    d:Vec3,
-    plane_dist:f64,
-    cx:Vec3,cy:Vec3,
-    w:usize,h:usize,
+pub trait Shape: Sync {
+    fn intersect(&self, ray: &Ray) -> Option<HitInfo> ;
+    fn bounding_box(&self) -> Option<AABB>;
 }
 
-impl Camera {
-    pub fn new(p:Vec3,d:Vec3,plane_dist:f64,w:usize,h:usize)->Self{
-        let cx=Vec3::new((w as f64) * 0.5135 / (h as f64), 0.0, 0.0);
-        let cy= (cx % d).norm()*0.5135;
-        Camera{p,d,plane_dist,cx,cy,w,h}
-    }
-    pub fn at(&self,sx:usize,sy:usize,x:usize,y2:usize)->Ray{
-        let r1 = 2.0 * random();
-        let dx = if r1 < 1.0 { r1.sqrt() - 1.0 } else { 1.0 - (2.0 - r1).sqrt() };
-        let r2 = 2.0 * random();
-        let dy = if r2 < 1.0 { r2.sqrt() - 1.0 } else { 1.0 - (2.0 - r2).sqrt() };
-        let d = self.cx * ((((sx as f64) + 0.5 + dx) / 2.0 + (x as f64)) / (self.w as f64) - 0.5)
-            + self.cy * ((((sy as f64) + 0.5 + dy) / 2.0 + (y2 as f64)) / (self.h as f64)  - 0.5)
-            + self.d;
-        Ray{ o:self.p + d * self.plane_dist, d:d.norm()}
-    }
-}
 
 pub struct Sphere {
     pub rad: f64,
@@ -61,8 +41,10 @@ impl Sphere {
     pub fn new(rad: f64, p: Vec3, m: Arc<dyn Material>) -> Sphere {
         Sphere { rad, p, m }
     }
+}
 
-    pub fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
+impl Shape for Sphere {
+    fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
         let po = self.p - ray.o;
         let b = po.dot(&ray.d);
         let d4 = b * b - po.dot(&po) + self.rad * self.rad;
@@ -80,25 +62,31 @@ impl Sphere {
         }
 
         if t1 > EPS {
-           let p = ray.o+ray.d*t1;
-           let n = (p - self.p) / self.rad;
-           return Some(HitInfo::new(t1, p, n, Arc::clone(&self.m),));
+            let p = ray.o+ray.d*t1;
+            let n = (p - self.p) / self.rad;
+            return Some(HitInfo::new(t1, p, n, Arc::clone(&self.m),));
         } else {
-           let p = ray.o+ray.d*t2;
-           let n = (p - self.p) / self.rad;
-           return Some(HitInfo::new(t2, p, n, Arc::clone(&self.m),));
+            let p = ray.o+ray.d*t2;
+            let n = (p - self.p) / self.rad;
+            return Some(HitInfo::new(t2, p, n, Arc::clone(&self.m),));
         }
+    }
+    fn bounding_box(&self) -> Option<AABB> {
+        let radius = Vec3::new(self.rad, self.rad, self.rad);
+        let min = self.p - radius;
+        let max = self.p + radius;
+        Some(AABB { min, max })
     }
 }
 
 
 pub struct Scene {
-    pub objects: Vec<Sphere>,
+    pub objects: Vec<Box<dyn Shape>>,
     pub model_name: String,
 }
 
 impl Scene {
-    pub fn add(&mut self, obj: Sphere) {
+    pub fn add(&mut self, obj: Box<dyn Shape>) {
         self.objects.push(obj);
     }
 
