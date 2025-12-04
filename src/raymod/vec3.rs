@@ -1,12 +1,7 @@
+
 use std::fs;
 use std::io::Write;
-use std::path::{Path};
-use std::ops::{Add, Mul, Div, Rem, Sub};
-use std::ops::{Index, IndexMut};
-
-pub fn random() -> f64 {
-    rand::random::<f64>()
-}
+use std::ops::{Add, Mul, Rem, Sub};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vec3 {
@@ -16,7 +11,8 @@ pub struct Vec3 {
 }
 
 pub type Color = Vec3;
-pub const BLACK:Vec3 = Vec3{x:0.0,y:0.0,z:0.0};
+
+#[allow(dead_code)]
 
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
@@ -64,13 +60,6 @@ impl Mul<f64> for Vec3 {
     }
 }
 
-impl Div<f64> for Vec3 {
-    type Output = Vec3;
-    fn div(self, rhs: f64) -> Self {
-        Vec3::new(self.x / rhs, self.y / rhs, self.z / rhs)
-    }
-}
-
 impl Rem for Vec3 {
     type Output = Vec3;
     fn rem(self, rhs: Self) -> Self {
@@ -81,41 +70,6 @@ impl Rem for Vec3 {
         )
     }
 }
-
-// ----------------------------------------------------
-// 読み取りアクセス (Vec3[i]) を可能にする実装
-// ----------------------------------------------------
-impl Index<usize> for Vec3 {
-    // 参照が返す型を指定
-    type Output = f64;
-
-    // インデックス i に対応するフィールドの参照を返す
-    fn index(&self, i: usize) -> &Self::Output {
-        match i {
-            0 => &self.x,
-            1 => &self.y,
-            2 => &self.z,
-            _ => panic!("Index out of bounds: {}", i), // 範囲外のインデックスはパニック
-        }
-    }
-}
-
-// ----------------------------------------------------
-// 書き込みアクセス (Vec3[i] = value) を可能にする実装
-// ----------------------------------------------------
-impl IndexMut<usize> for Vec3 {
-    // インデックス i に対応するフィールドの可変参照を返す
-    fn index_mut(&mut self, i: usize) -> &mut Self::Output {
-        match i {
-            0 => &mut self.x,
-            1 => &mut self.y,
-            2 => &mut self.z,
-            _ => panic!("Index out of bounds: {}", i),
-        }
-    }
-}
-
-
 
 fn clamp(x: f64) -> f64 {
     if x < 0.0 {
@@ -132,7 +86,7 @@ fn to_int(x: f64) -> u8 {
 }
 
 #[allow(dead_code)]
-pub fn save_ppm_file(filename: &str, image: Vec<Color>, width: usize, height: usize) {
+fn save_ppm_file(filename: &str, image: Vec<Color>, width: usize, height: usize) {
     let mut f = fs::File::create(filename).unwrap();
     
     writeln!(f, "P3\n{} {}\n{}", width, height, 255).unwrap();
@@ -148,50 +102,18 @@ pub fn save_ppm_file(filename: &str, image: Vec<Color>, width: usize, height: us
     }
 }
 
-/// 画像データをPPM形式でファイルに保存します。
-/// filenameに拡張子がない、または".ppm"でない場合は、自動で".ppm"に修正します。
-pub fn save_ppm_file2(filename: &str, image: Vec<Color>, width: usize, height: usize) {
-    // 1. PathBufを作成し、拡張子をチェック・修正する
-    let path = Path::new(filename);
-    let mut final_path = path.to_path_buf();
+pub fn save_png_file(filename: &str, out_image: Vec<Color>, width: usize, height: usize) {
+    let mut imgbuf = image::ImageBuffer::new(width as u32, height as u32);
 
-    // 既存の拡張子を取得し、小文字にして".ppm"と比較します
-    let extension_is_ppm = final_path
-        .extension()
-        .and_then(|ext| ext.to_str()) // OsStrから&strへ変換
-        .map(|ext| ext.eq_ignore_ascii_case("ppm")) // 小文字・大文字を無視して"ppm"と比較
-        .unwrap_or(false); // 拡張子がない場合はfalseとする
-
-    if !extension_is_ppm {
-        // 拡張子がない、または"ppm"でない場合は、"ppm"に設定/置換する
-        // 例: "output" -> "output.ppm"
-        // 例: "output.jpg" -> "output.ppm"
-        final_path.set_extension("ppm");
+    // Iterate over the coordinates and pixels of the image
+    for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
+        let i: usize = (x as usize) + (y as usize) * width;
+        let r = to_int(out_image[i].x);
+        let g = to_int(out_image[i].y);
+        let b = to_int(out_image[i].z);
+        *pixel = image::Rgb([r, g, b]);
     }
 
-    // 処理後のファイル名を表示（確認用）
-    println!("Saving image to: {}", final_path.display());
-
-    // 2. ファイルを作成し、失敗したらパニック
-    // final_pathはPathBufなので、参照(&Path)として渡します
-    let mut f = fs::File::create(&final_path).unwrap();
-    
-    // 3. ヘッダー情報の書き込み
-    writeln!(f, "P3\n{} {}\n{}", width, height, 255).unwrap();
-
-    // 4. ピクセルデータの書き込み
-    // PPMファイルは通常、3ピクセルごとに改行やスペースを入れますが、
-    // 簡易的なPPMビューアの互換性を考慮し、一行に収まるように書き出します。
-    for i in 0..(width * (height)) {
-        write!(
-            f,
-            "{} {} {} ",
-            to_int(image[i as usize].x),
-            to_int(image[i as usize].y),
-            to_int(image[i as usize].z)
-        )
-        .unwrap();
-    }
-    println!("File saved successfully.");
+    // Save the image as “fractal.png”, the format is deduced from the path
+    imgbuf.save(filename).unwrap();
 }
-
